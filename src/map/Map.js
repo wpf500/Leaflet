@@ -656,15 +656,16 @@ L.Map = L.Evented.extend({
 		if (e.type === 'click' && !e._simulated && this._draggableMoved(target)) { return; }
 
 		var data = {
-			originalEvent: e
-		};
+				originalEvent: e
+			},
+			propagate = (type !== 'mouseover' && type !== 'mouseout');
 		if (e.type !== 'keypress') {
 			data.containerPoint = target instanceof L.Marker ?
 					this.latLngToContainerPoint(target.getLatLng()) : this.mouseEventToContainerPoint(e);
 			data.layerPoint = this.containerPointToLayerPoint(data.containerPoint);
 			data.latlng = this.layerPointToLatLng(data.layerPoint);
 		}
-		target.fire(type, data, (type !== 'mouseover' && type !== 'mouseout'));
+		target.fire(type, data, propagate);
 	},
 
 	_draggableMoved: function (obj) {
