@@ -642,13 +642,7 @@ L.Map = L.Evented.extend({
 			L.DomUtil.preventOutline(e.target || e.srcElement);
 		}
 
-		if (target && target !== this) {
-			this._fireDOMEvent(target, e, type);
-			if (type === 'mouseover' || type === 'mouseout') { return; }
-		}
-		if (!L.DomEvent._skipped(e)) {  // In case the Leaflet event has been stopped on some target listener.
-			this._fireDOMEvent(this, e, type);
-		}
+		this._fireDOMEvent(target || this, e, type);
 	},
 
 	_fireDOMEvent: function (target, e, type) {
@@ -670,7 +664,7 @@ L.Map = L.Evented.extend({
 			data.layerPoint = this.containerPointToLayerPoint(data.containerPoint);
 			data.latlng = this.layerPointToLatLng(data.layerPoint);
 		}
-		target.fire(type, data, true);
+		target.fire(type, data, (type !== 'mouseover' && type !== 'mouseout'));
 	},
 
 	_draggableMoved: function (obj) {
