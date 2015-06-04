@@ -155,11 +155,12 @@ L.GridLayer = L.Layer.extend({
 		}
 
 		var now = +new Date(),
-			nextFrame = false;
+			nextFrame = false,
+			willPrune = false;
 
 		for (var key in this._tiles) {
 			var tile = this._tiles[key];
-			if (!tile.current || !tile.loaded || tile.active) { continue; }
+			if (!tile.current || !tile.loaded) { continue; }
 
 			var fade = Math.min(1, (now - tile.loaded) / 200);
 			if (fade < 1) {
@@ -167,10 +168,12 @@ L.GridLayer = L.Layer.extend({
 				nextFrame = true;
 			} else {
 				L.DomUtil.setOpacity(tile.el, opacity);
+				if (tile.active) { willPrune = true; }
 				tile.active = true;
-				this._pruneTiles();
 			}
 		}
+
+		if (willPrune) { this._pruneTiles(); }
 
 		if (nextFrame) {
 			L.Util.cancelAnimFrame(this._fadeFrame);
@@ -229,6 +232,10 @@ L.GridLayer = L.Layer.extend({
 
 	_pruneTiles: function () {
 		var key, tile;
+
+		var zoom = this._map.getZoom();
+		if (zoom > this.options.maxZoom ||
+			zoom < this.options.minZoom) { return this._removeAllTiles(); }
 
 		for (key in this._tiles) {
 			tile = this._tiles[key];
@@ -349,7 +356,11 @@ L.GridLayer = L.Layer.extend({
 		    translate = level.origin.multiplyBy(scale)
 		        .subtract(this._map._getNewPixelOrigin(center, zoom)).round();
 
-		L.DomUtil.setTransform(level.el, translate, scale);
+		if (L.Browser.any3d) {
+			L.DomUtil.setTransform(level.el, translate, scale);
+		} else {
+			L.DomUtil.setPosition(level.el, translate);
+		}
 	},
 
 	_resetGrid: function () {
@@ -389,11 +400,11 @@ L.GridLayer = L.Layer.extend({
 		// TODO move to reset
 		// var zoom = this._map.getZoom();
 
-		// if (zoom > this.options.maxZoom ||
-		//     zoom < this.options.minZoom) { return; }
-
 		if (center === undefined) { center = map.getCenter(); }
 		if (zoom === undefined) { zoom = Math.round(map.getZoom()); }
+
+		if (zoom > this.options.maxZoom ||
+			zoom < this.options.minZoom) { return; }
 
 		var pixelBounds = map.getPixelBounds(center, zoom),
 			tileRange = this._pxBoundsToTileRange(pixelBounds),
@@ -458,7 +469,7 @@ L.GridLayer = L.Layer.extend({
 
 		// don't load tile if it doesn't intersect the bounds in options
 		var tileBounds = this._tileCoordsToBounds(coords);
-		return L.latLngBounds(this.options.bounds).intersects(tileBounds);
+		return L.latLngBounds(this.options.bounds).overlaps(tileBounds);
 	},
 
 	_keyToBounds: function (key) {
