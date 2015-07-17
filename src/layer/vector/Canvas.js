@@ -109,6 +109,7 @@ L.Canvas = L.Renderer.extend({
 	},
 
 	_updatePoly: function (layer, closed) {
+        if (this.suspendDraw) return;
 
 		var i, j, len2, p,
 		    parts = layer._parts,
