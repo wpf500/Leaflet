@@ -94,8 +94,6 @@ L.Draggable = L.Evented.extend({
 			this._moved = true;
 			this._startPos = L.DomUtil.getPosition(this._element).subtract(offset);
 
-			L.DomUtil.addClass(document.body, 'leaflet-dragging');
-
 			this._lastTarget = e.target || e.srcElement;
 			L.DomUtil.addClass(this._lastTarget, 'leaflet-drag-target');
 		}
@@ -116,8 +114,6 @@ L.Draggable = L.Evented.extend({
 	},
 
 	_onUp: function () {
-		L.DomUtil.removeClass(document.body, 'leaflet-dragging');
-
 		if (this._lastTarget) {
 			L.DomUtil.removeClass(this._lastTarget, 'leaflet-drag-target');
 			this._lastTarget = null;
