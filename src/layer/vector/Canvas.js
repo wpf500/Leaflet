@@ -209,7 +209,7 @@ L.Canvas = L.Renderer.extend({
 
 	_handleMouseOut: function (e, point) {
 		var layer = this._hoveredLayer;
-		if (layer && (e.type === 'mouseout' || !layer._containsPoint(point))) {
+		if (layer && !this._map.dragging._draggable._moving && (e.type === 'mouseout' || !layer._containsPoint(point))) {
 			// if we're leaving the layer, fire mouseout
 			L.DomUtil.removeClass(this._container, 'leaflet-interactive');
 			this._fireEvent(layer, e, 'mouseout');
@@ -219,7 +219,7 @@ L.Canvas = L.Renderer.extend({
 
 	_handleMouseHover: function (e, point) {
 		var id, layer;
-		if (!this._hoveredLayer) {
+		if (!this._hoveredLayer && !this._map.dragging._draggable._moving) {
 			for (id in this._layers) {
 				layer = this._layers[id];
 				if (layer.options.interactive && layer._containsPoint(point)) {
