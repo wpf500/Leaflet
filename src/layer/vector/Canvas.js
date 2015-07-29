@@ -86,7 +86,12 @@ L.Canvas = L.Renderer.extend({
 	_redraw: function () {
 		this._redrawRequest = null;
 
-		this._draw(true); // clear layers in redraw bounds
+		if (this.skipClear) {
+			var bounds = this._redrawBounds, size = bounds.getSize();
+			this._ctx.clearRect(bounds.min.x, bounds.min.y, size.x, size.y);
+		} else {
+			this._draw(true); // clear layers in redraw bounds
+		}
 		this._draw(); // draw layers
 
 		this._redrawBounds = null;
@@ -109,7 +114,7 @@ L.Canvas = L.Renderer.extend({
 	},
 
 	_updatePoly: function (layer, closed) {
-        if (this.suspendDraw) return;
+		if (this.suspendDraw) return;
 
 		var i, j, len2, p,
 		    parts = layer._parts,
