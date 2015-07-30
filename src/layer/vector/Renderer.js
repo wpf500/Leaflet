@@ -86,7 +86,7 @@ L.Map.include({
 		var renderer = layer.options.renderer || this._getPaneRenderer(layer.options.pane) || this.options.renderer || this._renderer;
 
 		if (!renderer) {
-			renderer = this._renderer = (L.SVG && L.svg()) || (L.Canvas && L.canvas());
+			renderer = this._renderer = (this.options.preferCanvas && L.canvas()) || L.svg();
 		}
 
 		if (!this.hasLayer(renderer)) {

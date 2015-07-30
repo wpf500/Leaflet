@@ -8,6 +8,10 @@ L.ImageOverlay = L.Layer.extend({
 		opacity: 1,
 		alt: '',
 		interactive: false
+
+		/*
+		crossOrigin: <Boolean>,
+		*/
 	},
 
 	initialize: function (url, bounds, options) { // (String, LatLngBounds, Object)
@@ -81,6 +85,15 @@ L.ImageOverlay = L.Layer.extend({
 		return this;
 	},
 
+	setBounds: function (bounds) {
+		this._bounds = bounds;
+
+		if (this._map) {
+			this._reset();
+		}
+		return this;
+	},
+
 	getAttribution: function () {
 		return this.options.attribution;
 	},
@@ -114,6 +127,11 @@ L.ImageOverlay = L.Layer.extend({
 		img.onmousemove = L.Util.falseFn;
 
 		img.onload = L.bind(this.fire, this, 'load');
+
+		if (this.options.crossOrigin) {
+			img.crossOrigin = '';
+		}
+
 		img.src = this._url;
 		img.alt = this.options.alt;
 	},

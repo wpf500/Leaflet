@@ -17,7 +17,7 @@ L.Canvas = L.Renderer.extend({
 		var container = this._container = document.createElement('canvas');
 
 		L.DomEvent
-			.on(container, 'mousemove', this._onMouseMove, this)
+			.on(container, 'mousemove', L.Util.throttle(this._onMouseMove, 32, this), this)
 			.on(container, 'click mousedown mouseup contextmenu', this._onClick, this)
 			.on(container, 'mouseout', this._handleMouseOut, this);
 
@@ -26,6 +26,8 @@ L.Canvas = L.Renderer.extend({
 
 	_update: function () {
 		if (this._map._animatingZoom && this._bounds) { return; }
+
+		this._drawnLayers = {};
 
 		L.Renderer.prototype._update.call(this);
 
@@ -123,6 +125,8 @@ L.Canvas = L.Renderer.extend({
 
 		if (!len) { return; }
 
+		this._drawnLayers[layer._leaflet_id] = layer;
+
 		ctx.beginPath();
 
 		for (i = 0; i < len; i++) {
@@ -204,7 +208,7 @@ L.Canvas = L.Renderer.extend({
 	},
 
 	_onMouseMove: function (e) {
-		if (!this._map || this._map._animatingZoom) { return; }
+		if (!this._map || this._map.dragging._draggable._moving || this._map._animatingZoom) { return; }
 
 		var point = this._map.mouseEventToLayerPoint(e);
 		this._handleMouseOut(e, point);
@@ -224,8 +228,8 @@ L.Canvas = L.Renderer.extend({
 	_handleMouseHover: function (e, point) {
 		var id, layer;
 		if (!this._hoveredLayer && !this._map.dragging._draggable._moving) {
-			for (id in this._layers) {
-				layer = this._layers[id];
+			for (id in this._drawnLayers) {
+				layer = this._drawnLayers[id];
 				if (layer.options.interactive && layer._containsPoint(point)) {
 					this._fireEvent(layer, e, 'mouseover');
 					this._hoveredLayer = layer;
@@ -239,7 +243,7 @@ L.Canvas = L.Renderer.extend({
 	},
 
 	_fireEvent: function (layer, e, type) {
-		this._map._fireDOMEvent(layer, e, type || e.type);
+		this._map._fireDOMEvent(e, type || e.type, [layer]);
 	},
 
 	// TODO _bringToFront & _bringToBack, pretty tricky

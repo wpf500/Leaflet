@@ -154,14 +154,14 @@ L.Control.Layers = L.Control.extend({
 			this._update();
 		}
 
-		var overlay = this._layers[L.stamp(e.target)].overlay;
+		var obj = this._layers[L.stamp(e.target)];
 
-		var type = overlay ?
+		var type = obj.overlay ?
 			(e.type === 'add' ? 'overlayadd' : 'overlayremove') :
 			(e.type === 'add' ? 'baselayerchange' : null);
 
 		if (type) {
-			this._map.fire(type, e.target);
+			this._map.fire(type, obj);
 		}
 	},
 
@@ -220,7 +220,7 @@ L.Control.Layers = L.Control.extend({
 
 		this._handlingClick = true;
 
-		for (var i = 0, len = inputs.length; i < len; i++) {
+		for (var i = inputs.length - 1; i >= 0; i--) {
 			input = inputs[i];
 			layer = this._layers[input.layerId].layer;
 			hasLayer = this._map.hasLayer(layer);
